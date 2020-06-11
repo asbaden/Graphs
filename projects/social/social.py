@@ -1,3 +1,7 @@
+import random 
+from util import Queue 
+from graph import Graph
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -45,8 +49,28 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        #use add_user num_users times
 
         # Create friendships
+        for i in range(0, num_users):
+            self.add_user(f"User {i+1}")
+       
+        # generate all friendship combinations
+        possible_friendships = []
+
+
+        #avoid dups by making sure first number is smaller than secon 
+        for user_id in self.users:
+            for friend_id in range(user_id+1, self.last_id+1):
+                possible_friendships.append((user_id, friend_id))
+        # shuffle all possible friendships 
+        random.shuffle(possible_friendships)
+
+        # create for first X pairs 
+        for i in range(num_users * avg_friendships // 2):
+            friendship = possible_friendships[i]
+            self.add_friendship(friendship[0], friendship[1])
+
 
     def get_all_social_paths(self, user_id):
         """
@@ -57,14 +81,58 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
-        visited = {}  # Note that this is a dictionary, not a set
+        
         # !!!! IMPLEMENT ME
+        #shortest - tellesr us breadth frist 
+        # extended network tells us we have to use a traversal, connected component
+
+        # planning 
+        # how are we going to build a graph? already done 
+        # start at given user id, do a bft, return the path to each friend
+
+        # create queue 
+        qq = Queue()
+
+        # enqueue path
+        qq.enqueue([user_id])
+        # create visited 
+        visited = {}  # Note that this is a dictionary, not a set
+
+        # while queue not empty 
+        while qq.size() > 0:
+            # dequeue first path 
+            path = qq.dequeue()
+
+            vertex = path[-1]
+
+           
+
+            # if not visited 
+            if vertex not in visited:
+                # do the thing 
+               
+
+                # add to visited 
+                visited[vertex] = path
+
+                # for each neighbor 
+                for neighbor in self.friendships[vertex]:
+
+                    # copy path and enqueue 
+                    new_path = path.copy()
+                    new_path.append(neighbor)
+                    qq.enqueue(new_path)
+
+
+
         return visited
 
 
 if __name__ == '__main__':
     sg = SocialGraph()
     sg.populate_graph(10, 2)
+    print("friendships")
     print(sg.friendships)
     connections = sg.get_all_social_paths(1)
+    print("connections")
     print(connections)

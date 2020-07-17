@@ -1,7 +1,6 @@
 from room import Room
 from player import Player
 from world import World
-from util import Stack
 from ast import literal_eval
 
 
@@ -29,49 +28,67 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+# need to make a reverse dictionary with the opposite directions to back track 
+reverse = {"n": "s", "s": "n", "e": "w", "w": "e"}
 
-#`player.current_room.id` will return the current room, `player.current_room.get_exits()` will show rthe available neighbors, and `player.travel(direction)` will move the player 
-# edges will the dictionary get exits provides with the av
-# To iterate through the list in a dft function  create a helper function that uses the "travel" method from player to move in a direction
-# similar to the traversal test below, add that direction of that move to the traversal path to keep track of the moves 
+#use a function to generate the path we need to take 
+    #we need to keep track of path we take, so this will passed into the argument 
+def generate_path(visited_rooms = None):
+    #visited_rooms is set to None, this is to set up a base case to use this function recursively
 
-# create a dictionary called backtrack with the swaped values of direciton to move in the opposite direction 
+    
+    if visited_rooms is None: 
+        visited_rooms = set()
+    
+    #initialize the function with direction_history 
+    direction_history = []
+    #once we are in a room, in order to find the directions, we can use a method called  get_exits, once we have the exits, 
+    for direction in player.current_room.get_exits():
+        #  move in each of the  directions we have available
+        player.travel(direction)
+        # print("TRAVELING TO", direction)
 
-# Use a DFS function that utilizes back tracking with visited and move as arguments set to none
-    # set the current room to the player.current_room.id
-    # create the edges with setting neighbors to player.current_room.get_exits()
-    # create a conditional checking if no nodes have been visited, create a set(dictionary) to store the nodes we visit
+        #once we are in the other room, we are checking if the room is in visited 
+        if player.current_room.id not in visited_rooms:
+            # if so, add the room to visited, also we need to keep track of the direction we took to get to this room. Add the direction we took to the path history.
+            visited_rooms.add(player.current_room.id)
+            # print("CURRENT ROOM", player.current_room.id)
+            # print("VISITED ROOMS", visited_rooms)
+            direction_history.append(direction)
+            # print("DIRECTION HISTORY", direction_history)
+            # recursively call the generate_path function passing in the visited rooms. We need to increment 
+            direction_history = direction_history + generate_path(visited_rooms) 
+            #if we reach a room where there are no exits except for where we have gone, we need to back track. 
+            player.travel(reverse[direction])
+            
+            # Keep track of the directions taken. 
+            direction_history.append(reverse[direction])
 
+        # else it has been visited
+        else:
+            #back track to the previous room 
+            player.travel(reverse[direction])
+            # do not track this movement, because we will constantly be going into visited rooms
+    
+    #return the direction history 
+    return direction_history
 
-
-
-
-
-# Movement in the dft function
-
-def DFS_util(direction):
-    player.travel(direction)
-    traversal_path.append(direction)
-    print("this is traversal path", traversal_path)
-
-# print("this is current room", player.current_room.id)
-
-print("this is testing uutil", DFS_util("n"))
-
-
-
-
+#call the function, and store the results in the traversal path
+traversal_path = generate_path()
+            
 
 # TRAVERSAL TEST
 visited_rooms = set()
 player.current_room = world.starting_room
 visited_rooms.add(player.current_room)
 
+
 #visited rooms counted with current room on each move 
 
 for move in traversal_path:
     player.travel(move)
     visited_rooms.add(player.current_room)
+    # print("TRAVERSAL TEST", visited_rooms)
 
 if len(visited_rooms) == len(room_graph):
     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
@@ -84,12 +101,12 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
